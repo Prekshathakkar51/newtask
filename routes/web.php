@@ -8,6 +8,19 @@ Route::get('/', function () {
     return view('pages.dashboard.ecommerce', ['title' => 'E-commerce Dashboard']);
 })->name('dashboard');
 
+// task pages
+Route::get('/task', function () {
+    return view('pages.task.create-task', ['title' => 'Create Task']);
+})->name('create-task');
+
+Route::get('/show-task', function () {
+    return view('pages.task.show-task', ['title' => 'Show Task']);
+})->name('show-task');
+
+Route::get('/kanban', function () {
+    return view('pages.task.kanban', ['title' => 'Kanban Board']);
+})->name('kanban');
+
 // calender pages
 Route::get('/calendar', function () {
     return view('pages.calender', ['title' => 'Calendar']);

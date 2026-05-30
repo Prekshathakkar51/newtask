@@ -9,11 +9,15 @@ import 'flatpickr/dist/flatpickr.min.css';
 import { Calendar } from '@fullcalendar/core';
 
 
+import kanbanBoard from './kanban';
 
 window.Alpine = Alpine;
 window.ApexCharts = ApexCharts;
 window.flatpickr = flatpickr;
 window.FullCalendar = Calendar;
+
+
+Alpine.data('kanbanBoard', kanbanBoard);
 
 Alpine.start();
 
@@ -43,6 +47,26 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.querySelector('#chartThirteen')) {
         import('./components/chart/chart-13').then(module => module.initChartThirteen());
     }
+
+
+
+    if (document.querySelector('#chartDistStatus')) {
+        import('./components/chart/taskDistStatus').then(module => module.initChartOne());
+    }
+
+     if (document.querySelector('#monthlyChartCreation')) {
+        import('./components/chart/monthlyChartCreation').then(module => module.initChartOne());
+    }
+
+    if (document.querySelector('#priorityChart')) {
+        import('./components/chart/priorityChart').then(module => module.initChartSix());
+    }
+
+    if (document.querySelector('#taskCompleteTrend')) {
+        import('./components/chart/taskCompleteTrend').then(module => module.initChartThree());
+    }
+
+    
 
     // Calendar init
     if (document.querySelector('#calendar')) {

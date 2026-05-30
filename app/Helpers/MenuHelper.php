@@ -25,6 +25,15 @@ class MenuHelper
                 'path' => '/profile',
             ],
             [
+                'name' => 'Task',
+                'icon' => 'forms',
+                'subItems' => [
+                    ['name' => 'Create Task', 'path' => '/task', 'pro' => false],
+                    ['name' => 'Show Task', 'path' => '/show-task', 'pro' => false],
+                    ['name' => 'Kanban Board', 'path' => '/kanban', 'pro' => false],
+                ],
+            ],
+            [
                 'name' => 'Forms',
                 'icon' => 'forms',
                 'subItems' => [
