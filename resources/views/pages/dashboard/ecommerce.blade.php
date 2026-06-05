@@ -2,92 +2,236 @@
 
 @section('content')
 
-<div class="mb-6">
+  <div x-data="{
+          userId: '',
+          status: '',
+          fromDate: '',
+          toDate: '',
 
-  <div class="flex items-center gap-3">
-            <button class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
-                <svg class="stroke-current fill-white dark:fill-gray-800" width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M2.29004 5.90393H17.7067" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M17.7075 14.0961H2.29085" stroke="" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
-                    <path d="M12.0826 3.33331C13.5024 3.33331 14.6534 4.48431 14.6534 5.90414C14.6534 7.32398 13.5024 8.47498 12.0826 8.47498C10.6627 8.47498 9.51172 7.32398 9.51172 5.90415C9.51172 4.48432 10.6627 3.33331 12.0826 3.33331Z" fill="" stroke="" stroke-width="1.5" />
-                    <path d="M7.91745 11.525C6.49762 11.525 5.34662 12.676 5.34662 14.0959C5.34661 15.5157 6.49762 16.6667 7.91745 16.6667C9.33728 16.6667 10.4883 15.5157 10.4883 14.0959C10.4883 12.676 9.33728 11.525 7.91745 11.525Z" fill="" stroke="" stroke-width="1.5" />
-                </svg>
-                Filter
-            </button>
+          dashboardData: {
+        totalTasks: @js($totalTasks),
+        pendingTasks: @js($pendingTasks),
+        inProgressTasks: @js($inProgressTasks),
+        completedTasks: @js($completedTasks),
+        overdueTasks: @js($overdueTasks),
+        totalTeamMembers: @js($totalTeamMembers),
+    },
 
-            <button class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-theme-sm font-medium text-gray-700 shadow-theme-xs hover:bg-gray-50 hover:text-gray-800 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-white/[0.03] dark:hover:text-gray-200">
-                See all
-            </button>
-        </div>
+          handleDateRange(event) {
+
+              const dates = event.detail.selectedDates;
+
+              this.fromDate = '';
+              this.toDate = '';
+
+              if (dates.length > 0) {
+                  this.fromDate = dates[0].toLocaleDateString('en-CA');
+              }
+
+              if (dates.length > 1) {
+                  this.toDate = dates[1].toLocaleDateString('en-CA');
+              }
+
+              this.fetchDashboard();
+          },
+
+          async fetchDashboard() {
+
+      try {
+
+
+          const response = await axios.get(
+              '/dashboard/filter',
+              {
+                  params: {
+                      user_id: this.userId,
+                      status: this.status,
+                      from_date: this.fromDate,
+                      to_date: this.toDate,
+                  }
+              }
+          );
+
+          this.dashboardData = {
+    totalTasks: response.data.totalTasks,
+    pendingTasks: response.data.pendingTasks,
+    inProgressTasks: response.data.inProgressTasks,
+    completedTasks: response.data.completedTasks,
+    overdueTasks: response.data.overdueTasks,
+    totalTeamMembers: response.data.totalTeamMembers,
+};
+
+          window.statusDistributionChart.updateSeries([
+      {
+          name: 'Tasks',
+          data: response.data.statusDistribution
+      }
+      ]);
+
+      window.monthlyTaskCreationChart.updateSeries([
+      {
+          name: 'Tasks',
+          data: response.data.monthlyTaskCreationData
+      }
+  ]);
+
+  window.priorityChart.updateSeries([
+      {
+          name: 'Pending',
+          data: response.data.priorityChartData.pending
+      },
+      {
+          name: 'In Progress',
+          data: response.data.priorityChartData.in_progress
+      },
+      {
+          name: 'Completed',
+          data: response.data.priorityChartData.completed
+      }
+  ]);
+
+  window.taskCompletionTrendChart.updateSeries([
+    {
+        name: 'High',
+        data: response.data.taskCompletionTrend.high
+    },
+    {
+        name: 'Medium',
+        data: response.data.taskCompletionTrend.medium
+    },
+    {
+        name: 'Low',
+        data: response.data.taskCompletionTrend.low
+    }
+]);
+
+
+      } catch (error) {
+
+          console.error(error);
+
+      }
+
+  },
+      }">
+
+    <div class="flex flex-wrap gap-6 mb-6">
+
+      <div @date-change.window="handleDateRange($event)">
+        <x-form.date-picker mode="range" placeholder="Task Creation Date Range" />
+      </div>
+
+      <select x-model="userId" @change="fetchDashboard()" {{-- @change="console.log('User:', userId)" --}}
+        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800   rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                >
+
+        <option value="">Select User</option>
+
+        @foreach($users as $user)
+          <option value="{{ $user->id }}">
+            {{ $user->name }}
+          </option>
+        @endforeach
+
+      </select>
+
+      <select x-model="status" @change="fetchDashboard()" {{-- @change="console.log('Status:', status)" --}}
+        class="dark:bg-dark-900 shadow-theme-xs focus:border-brand-300 focus:ring-brand-500/10 dark:focus:border-brand-800   rounded-lg border border-gray-300 bg-transparent bg-none px-4 py-2.5 pr-11 text-sm text-gray-800 placeholder:text-gray-400 focus:ring-3 focus:outline-hidden dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30"
+                >
+
+        <option value="">Select Status</option>
+        <option value="pending">Pending</option>
+        <option value="in_progress">In Progress</option>
+        <option value="completed">Completed</option>
+
+      </select>
+
+    </div>
+
+    
+
+
+    <div class="grid grid-cols-12 gap-4 md:gap-6">
+
+
+
+
+      <div class="col-span-12 ">
+        <x-ecommerce.ecommerce-metrics :totalTasks="$totalTasks" :pendingTasks="$pendingTasks"
+          :inProgressTasks="$inProgressTasks" :completedTasks="$completedTasks" :overdueTasks="$overdueTasks"
+          :totalTeamMembers="$totalTeamMembers" />
+
+      </div>
+
+      <div class="col-span-12">
+
+
+        <x-common.component-card title="Task Distribution Status">
+          <!-- ====== Bar Chart One Start -->
+          <div class="overflow-hidden w-full h-[250px]">
+            <div id="chartDistStatus"></div>
+          </div>
+          <!-- ====== Bar Chart One End -->
+        </x-common.component-card>
+      </div>
+
+      <div class="col-span-12">
+
+
+        <x-common.component-card title="Monthly Task Creation">
+          <!-- ====== Bar Chart One Start -->
+          <div class="overflow-hidden w-full h-[250px]">
+            <div id="monthlyChartCreation"></div>
+          </div>
+          <!-- ====== Bar Chart One End -->
+        </x-common.component-card>
       </div>
 
 
-  <div class="grid grid-cols-12 gap-4 md:gap-6">
+      <div class="col-span-12">
+        <x-common.component-card title="Task Completion Trend">
+          <!-- ====== Line Chart One Start -->
+          <div class="custom-scrollbar max-w-full overflow-x-auto">
+            <div id="taskCompleteTrend" class="min-w-[1000px]"></div>
+          </div>
+          <!-- ====== Line Chart One End -->
+        </x-common.component-card>
+      </div>
+
+      <div class="col-span-12">
+        {{-- <x-ecommerce.statistics-chart /> --}}
+
+        <x-common.component-card title="Priority Wise Task Count">
+          <!-- ====== Bar Chart One Start -->
+          <div class="overflow-hidden w-full h-[250px]">
+            <div id="priorityChart"></div>
+          </div>
+          <!-- ====== Bar Chart One End -->
+        </x-common.component-card>
+      </div>
 
 
-
-
-    <div class="col-span-12 ">
-      <x-ecommerce.ecommerce-metrics />
-      {{-- <x-ecommerce.monthly-sale /> --}}
-    </div>
-    {{-- <div class="col-span-12 xl:col-span-5">
-      <x-ecommerce.monthly-target />
-    </div> --}}
-
-    <div class="col-span-12">
-      {{-- <x-ecommerce.statistics-chart /> --}}
-
-      <x-common.component-card title="Task Distribution Status">
-        <!-- ====== Bar Chart One Start -->
-        <div class="overflow-hidden w-full h-[250px]">
-          <div id="chartDistStatus"></div>
-        </div>
-        <!-- ====== Bar Chart One End -->
-      </x-common.component-card>
-    </div>
-
-    <div class="col-span-12">
-      {{-- <x-ecommerce.statistics-chart /> --}}
-
-      <x-common.component-card title="Monthly Task Creation">
-        <!-- ====== Bar Chart One Start -->
-        <div class="overflow-hidden w-full h-[250px]">
-          <div id="monthlyChartCreation"></div>
-        </div>
-        <!-- ====== Bar Chart One End -->
-      </x-common.component-card>
     </div>
 
 
-    <div class="col-span-12">
-      <x-common.component-card title="Task Completion Trend">
-        <!-- ====== Line Chart One Start -->
-        <div class="custom-scrollbar max-w-full overflow-x-auto">
-          <div id="taskCompleteTrend" class="min-w-[1000px]"></div>
-        </div>
-        <!-- ====== Line Chart One End -->
-      </x-common.component-card>
-    </div>
+    @push('scripts')
 
-    <div class="col-span-12">
-      {{-- <x-ecommerce.statistics-chart /> --}}
+      <script>
 
-      <x-common.component-card title="Priority Wise Task Count">
-        <!-- ====== Bar Chart One Start -->
-        <div class="overflow-hidden w-full h-[250px]">
-          <div id="priorityChart"></div>
-        </div>
-        <!-- ====== Bar Chart One End -->
-      </x-common.component-card>
-    </div>
+        window.dashboardData = {
 
-    {{-- <div class="col-span-12 xl:col-span-5">
-      <x-ecommerce.customer-demographic />
-    </div> --}}
+          statusDistribution: @json($statusDistribution),
+          priorityChartData: @json($priorityChartData),
+          monthlyTaskCreation: @json($monthlyTaskCreationData),
+          taskCompletionTrend: @json($taskCompletionTrend),
 
-    {{-- <div class="col-span-12 xl:col-span-7">
-      <x-ecommerce.recent-orders />
-    </div> --}}
+
+
+        };
+
+      </script>
+
+    @endpush
+
   </div>
 @endsection

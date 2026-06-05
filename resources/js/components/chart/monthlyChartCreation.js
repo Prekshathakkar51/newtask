@@ -6,8 +6,8 @@ export const initChartOne = () => {
 
     const chartOneOptions = {
         series: [{
-            name: "Sales",
-            data: [168, 385, 201, 298, 187, 195, 291, 110, 215, 390, 280, 112],
+            name: "Tasks",
+            data: window.dashboardData.monthlyTaskCreation,
         },],
         colors: ["#465fff"],
         chart: {
@@ -95,14 +95,23 @@ export const initChartOne = () => {
         },
     };
 
-    const chart = new ApexCharts(chartElement, chartOneOptions);
-    chart.render();
+    // const chart = new ApexCharts(chartElement, chartOneOptions);
+    // chart.render();
 
-    setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-    }, 300);
+    // setTimeout(() => {
+    //     window.dispatchEvent(new Event('resize'));
+    // }, 300);
 
-    return chart;
+    // return chart;
+
+    window.monthlyTaskCreationChart = new ApexCharts(
+        chartElement,
+        chartOneOptions
+    );
+
+    window.monthlyTaskCreationChart.render();
+
+    return window.monthlyTaskCreationChart;
 };
 
 export default initChartOne;

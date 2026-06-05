@@ -17,7 +17,9 @@
             <img src="/images/user/owner.png" alt="User" />
         </span>
 
-       <span class="block mr-1 font-medium text-theme-sm">Musharof</span>
+       <span class="block mr-1 font-medium text-theme-sm">@if(auth()->check())
+    {{ auth()->user()->name }}
+@endif</span>
 
         <!-- Chevron Icon -->
         <svg
@@ -30,6 +32,9 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
     </button>
+
+
+    @auth
 
     <!-- Dropdown Start -->
     <div
@@ -45,12 +50,16 @@
     >
         <!-- User Info -->
         <div>
-            <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">Musharof Chowdhury</span>
-            <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">randomuser@pimjo.com</span>
+            <span class="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">@if(auth()->check())
+    {{ auth()->user()->name }}
+@endif</span>
+            <span class="mt-0.5 block text-theme-xs text-gray-500 dark:text-gray-400">@if(auth()->check())
+    {{ auth()->user()->email }}
+@endif</span>
         </div>
 
         <!-- Menu Items -->
-        <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
+        {{-- <ul class="flex flex-col gap-1 pt-4 pb-3 border-b border-gray-200 dark:border-gray-800">
             @php
                 $menuItems = [
                     [
@@ -105,13 +114,13 @@
                     </a>
                 </li>
             @endforeach
-        </ul>
+        </ul> --}}
 
         <!-- Sign Out -->
-        {{-- <form method="POST" action="#">
-            @csrf --}}
-            <a
-                href="/signin"
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button
+                href="{{ route('signin') }}"
                 class="flex items-center w-full gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
                 @click="closeDropdown()"
             >
@@ -121,8 +130,26 @@
                     </svg>
                 </span>
                 Sign out
-            </a>
-        {{-- </form> --}}
+            </button>
+        </form>
     </div>
     <!-- Dropdown End -->
 </div>
+@endauth
+
+
+@guest
+<div class="flex items-center gap-3">
+
+    <a href="{{ route('signin') }}"
+       class="px-4 py-2 text-sm font-medium border rounded-lg">
+        Sign In
+    </a>
+
+    <a href="{{ route('signup') }}"
+       class="px-4 py-2 text-sm font-medium text-white rounded-lg bg-brand-500">
+        Sign Up
+    </a>
+
+</div>
+@endguest

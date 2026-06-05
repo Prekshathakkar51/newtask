@@ -2,14 +2,25 @@ import './bootstrap';
 import Alpine from 'alpinejs';
 import ApexCharts from 'apexcharts';
 
+import Sortable from 'sortablejs';
+
 // flatpickr
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 // FullCalendar
 import { Calendar } from '@fullcalendar/core';
 
+import './kanban';
 
-import kanbanBoard from './kanban';
+import './register-validation';
+import './login-validation';
+import './task-validation';
+
+
+
+
+
+
 
 window.Alpine = Alpine;
 window.ApexCharts = ApexCharts;
@@ -17,7 +28,51 @@ window.flatpickr = flatpickr;
 window.FullCalendar = Calendar;
 
 
-Alpine.data('kanbanBoard', kanbanBoard);
+
+
+Alpine.store('toast', {
+    show: false,
+    title: '',
+    message: '',
+    type: 'success',
+    timeout: null,
+
+    success(message) {
+        this.type = 'success';
+        this.showToast('Success', message);
+    },
+
+    error(message) {
+        this.type = 'error';
+        this.showToast('Error', message);
+    },
+
+    info(message) {
+        this.type = 'info';
+        this.showToast('Info', message);
+    },
+
+    warning(message) {
+        this.type = 'warning';
+        this.showToast('Warning', message);
+    },
+
+    showToast(title, message) {
+        this.title = title;
+        this.message = message;
+        this.show = true;
+
+        clearTimeout(this.timeout);
+
+        this.timeout = setTimeout(() => {
+            this.show = false;
+        }, 3000);
+    },
+
+    hide() {
+        this.show = false;
+    }
+});
 
 Alpine.start();
 

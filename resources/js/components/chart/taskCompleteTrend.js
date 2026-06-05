@@ -6,15 +6,15 @@ export const initChartThree = () => {
         const chartThreeOptions = {
             series: [{
                 name: "High",
-                data: [180, 190, 170, 160, 175, 165, 170],
+                data: window.dashboardData.taskCompletionTrend.high,
             },
             {
                 name: "Medium",
-                data: [40, 30, 50, 40, 55, 40, 70],
+                data: window.dashboardData.taskCompletionTrend.medium,
             },
             {
                 name: "Low",
-                data: [20, 40, 70, 140, 75, 140, 79],
+                data: window.dashboardData.taskCompletionTrend.low,
             },
             ],
             legend: {
@@ -22,7 +22,7 @@ export const initChartThree = () => {
                 position: "top",
                 horizontalAlign: "left",
             },
-            colors: ["#213EFC","#6593FF" ,  "#9FBAFB"],
+            colors: ["#213EFC", "#6593FF", "#9FBAFB"],
             chart: {
                 fontFamily: "Outfit, sans-serif",
                 height: 250,
@@ -40,7 +40,7 @@ export const initChartThree = () => {
             },
             stroke: {
                 curve: "straight",
-                width: ["2", "2" , "2"],
+                width: ["2", "2", "2"],
             },
             markers: {
                 size: 0,
@@ -51,9 +51,9 @@ export const initChartThree = () => {
             },
             grid: {
                 padding: {
-                right: 20,
-                left: 10
-            },
+                    right: 20,
+                    left: 10
+                },
                 xaxis: {
                     lines: {
                         show: false,
@@ -76,13 +76,18 @@ export const initChartThree = () => {
             xaxis: {
                 type: "category",
                 categories: [
-                    "Mon",
-                    "Tue",
-                    "Wed",
-                    "Thu",
-                    "Fri",
-                    "Sat",
-                    "Sun",
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
                 ],
                 axisBorder: {
                     show: false,
@@ -101,14 +106,24 @@ export const initChartThree = () => {
             },
         };
 
-        const chart = new ApexCharts(chartElement, chartThreeOptions);
-        chart.render();
+        //     const chart = new ApexCharts(chartElement, chartThreeOptions);
+        //     chart.render();
 
-        setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-    }, 300);
+        //     setTimeout(() => {
+        //         window.dispatchEvent(new Event('resize'));
+        //     }, 300);
 
-        return chart;
+        //     return chart;
+
+
+        window.taskCompletionTrendChart = new ApexCharts(
+            chartElement,
+            chartThreeOptions
+        );
+
+        window.taskCompletionTrendChart.render();
+
+        return window.taskCompletionTrendChart;
     }
 }
 

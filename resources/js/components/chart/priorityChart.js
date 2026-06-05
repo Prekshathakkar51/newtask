@@ -7,22 +7,19 @@ export function initChartSix() {
             series: [
                 {
                     name: "Pending",
-                    data: [44, 55, 41],
+                    data: window.dashboardData.priorityChartData.pending,
                 },
                 {
-                    name: "InProgress",
-                    data: [13, 23, 20],
+                    name: "In Progress",
+                    data: window.dashboardData.priorityChartData.in_progress,
                 },
                 {
                     name: "Completed",
-                    data: [11, 17, 15],
+                    data: window.dashboardData.priorityChartData.completed,
                 },
-                {
-                    name: "Overdue",
-                    data: [21, 7, 25],
-                },
+
             ],
-            colors: ["#2a31d8", "#465fff", "#7592ff", "#c2d6ff"],
+            colors: ["#2a31d8", "#7592ff", "#c2d6ff"],
             chart: {
                 fontFamily: "Outfit, sans-serif",
                 type: "bar",
@@ -79,9 +76,9 @@ export function initChartSix() {
             },
             grid: {
                 padding: {
-                right: 20,
-                left: 10
-            },
+                    right: 20,
+                    left: 10
+                },
                 yaxis: {
                     lines: {
                         show: true,
@@ -104,12 +101,22 @@ export function initChartSix() {
             },
         };
 
-        const chartSix = new ApexCharts(chartSixEl, chartSixOptions);
-        chartSix.render();
-        setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-    }, 300);
+        //     const chartSix = new ApexCharts(chartSixEl, chartSixOptions);
+        //     chartSix.render();
+        //     setTimeout(() => {
+        //     window.dispatchEvent(new Event('resize'));
+        // }, 300);
 
-        return chartSix;
+        //     return chartSix;
+       
+
+        window.priorityChart = new ApexCharts(
+            chartSixEl,
+            chartSixOptions
+        );
+
+        window.priorityChart.render();
+
+        return window.priorityChart;
     }
 }

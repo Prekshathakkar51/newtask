@@ -1,99 +1,197 @@
-export default () => ({
-    draggingTaskId: null,
-    draggedFromLaneId: null,
+import Sortable from 'sortablejs';
 
+window.kanbanBoard = (tasks) => ({
     lanes: [
         {
-            id: 'todo',
-            name: 'To Do',
-            badgeClass: 'bg-gray-100 text-gray-700 dark:bg-white/[0.03] dark:text-white/80',
-            tasks: [
-                {
-                    id: 1,
-                    title: 'Setup Laravel Project',
-                    date: 'Today',
-                    comments: 2,
-                    user: 'https://i.pravatar.cc/40?img=1',
-                    category: 'Backend',
-                    categoryClass: 'bg-brand-50 text-brand-500 dark:bg-brand-500/15 dark:text-brand-400'
-                },
-                {
-                    id: 2,
-                    title: 'Design Login Page',
-                    date: 'Tomorrow',
-                    comments: 1,
-                    user: 'https://i.pravatar.cc/40?img=2',
-                    category: 'UI',
-                    categoryClass: 'bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-500'
-                }
-            ]
+            id: 'pending',
+            name: 'Pending',
+            tasks: tasks.filter(t => t.status === 'pending')
         },
-
         {
-            id: 'in-progress',
+            id: 'in_progress',
             name: 'In Progress',
-            badgeClass: 'bg-warning-50 text-warning-700 dark:bg-warning-500/15 text-orange-400',
-            tasks: [
-                {
-                    id: 3,
-                    title: 'Build Kanban UI',
-                    date: 'Today',
-                    comments: 4,
-                    user: 'https://i.pravatar.cc/40?img=3',
-                    category: 'Frontend',
-                    categoryClass: 'bg-orange-400/10 text-orange-400'
-                }
-            ]
+            tasks: tasks.filter(t => t.status === 'in_progress')
         },
-
         {
             id: 'completed',
             name: 'Completed',
-            badgeClass: 'bg-success-50 text-success-700 dark:bg-success-500/15 dark:text-success-500',
-            tasks: [
-                {
-                    id: 4,
-                    title: 'Install TailAdmin',
-                    date: 'Yesterday',
-                    comments: 5,
-                    user: 'https://i.pravatar.cc/40?img=4',
-                    category: 'Setup',
-                    categoryClass: 'bg-gray-100 text-gray-700 dark:bg-white/[0.03] dark:text-white/80'
-                }
-            ]
+            tasks: tasks.filter(t => t.status === 'completed')
         }
     ],
 
-    handleDragStart(event, taskId, laneId) {
-        this.draggingTaskId = taskId;
-        this.draggedFromLaneId = laneId;
+    init() {
 
-        event.currentTarget.classList.add('opacity-50');
+        this.$nextTick(() => {
+
+        this.lanes.forEach(lane => {
+
+            const el = document.getElementById(`lane-${lane.id}`);
+
+            if (!el) {
+                console.error(`Lane not found: lane-${lane.id}`);
+                return;
+            }
+
+            new Sortable(el, {
+                group: 'kanban',
+                animation: 150,
+
+                onEnd: (evt) => {
+                    this.moveTask(evt);
+                }
+            });
+
+        });
+
+    });
     },
 
-    handleDragEnd(event) {
-        event.currentTarget.classList.remove('opacity-50');
-    },
+    async moveTask(evt) {
 
-    handleDrop(event, laneId) {
-        event.preventDefault();
+        const fromLaneId = evt.from.dataset.laneId;
+        const toLaneId = evt.to.dataset.laneId;
 
-        const fromLane = this.lanes.find(l => l.id === this.draggedFromLaneId);
-        const toLane = this.lanes.find(l => l.id === laneId);
+        if (fromLaneId === toLaneId) return;
 
-        if (!fromLane || !toLane) return;
+        const fromLane = this.lanes.find(l => l.id === fromLaneId);
+        const toLane = this.lanes.find(l => l.id === toLaneId);
 
-        const taskIndex = fromLane.tasks.findIndex(
-            t => t.id === this.draggingTaskId
-        );
+        const task = fromLane.tasks.splice(evt.oldIndex, 1)[0];
 
-        if (taskIndex === -1) return;
+        const originalStatus = task.status;
 
-        const task = fromLane.tasks.splice(taskIndex, 1)[0];
+        task.status = toLaneId;
 
-        toLane.tasks.push(task);
+        toLane.tasks.splice(evt.newIndex, 0, task);
 
-        this.draggingTaskId = null;
-        this.draggedFromLaneId = null;
+        try {
+            const response = await axios.patch(`/tasks/${task.id}/status`, {
+                status: toLaneId
+            });
+
+            Alpine.store('toast').success(
+                response.data.message || 'Task updated successfully'
+            );
+
+        } catch (error) {
+
+            // rollback
+            toLane.tasks.splice(evt.newIndex, 1);
+
+            task.status = originalStatus;
+
+            fromLane.tasks.splice(evt.oldIndex, 0, task);
+
+            Alpine.store('toast').error(
+                error.response?.data?.message || 'Failed to update task'
+            );
+        }
     }
 });
+
+
+
+
+// window.kanbanBoard = (tasks) => ({
+
+//     draggedTaskId: null,
+//     sourceLaneId: null,
+
+//     lanes: [
+//         {
+//             id: 'pending',
+//             name: 'Pending',
+//             badgeClass: 'bg-yellow-100 text-yellow-700',
+//             tasks: tasks.filter(task => task.status === 'pending')
+//         },
+//         {
+//             id: 'in_progress',
+//             name: 'In Progress',
+//             badgeClass: 'bg-blue-100 text-blue-700',
+//             tasks: tasks.filter(task => task.status === 'in_progress')
+//         },
+//         {
+//             id: 'completed',
+//             name: 'Completed',
+//             badgeClass: 'bg-green-100 text-green-700',
+//             tasks: tasks.filter(task => task.status === 'completed')
+//         }
+//     ],
+
+//     handleDragStart(taskId, laneId) {
+//         this.draggedTaskId = taskId;
+//         this.sourceLaneId = laneId;
+//     },
+
+//     handleDragEnd() {
+//         this.draggedTaskId = null;
+//         this.sourceLaneId = null;
+//     },
+
+
+//     async handleDrop(event, targetLaneId) {
+
+//         // console.log('DROP FIRED');
+//         // console.log('Target Lane:', targetLaneId);
+
+//         if (this.sourceLaneId === targetLaneId) {
+//             return;
+//         }
+
+//         const sourceLane = this.lanes.find(
+//             lane => lane.id === this.sourceLaneId
+//         );
+
+//         const targetLane = this.lanes.find(
+//             lane => lane.id === targetLaneId
+//         );
+
+//         const taskIndex = sourceLane.tasks.findIndex(
+//             task => task.id === this.draggedTaskId
+//         );
+
+//         if (taskIndex === -1) {
+//             return;
+//         }
+
+//         const task = sourceLane.tasks.splice(taskIndex, 1)[0];
+
+//         task.status = targetLaneId;
+
+//         targetLane.tasks.push(task);
+
+//         try {
+
+//             const response = await fetch(`/tasks/${task.id}/status`, {
+
+//                 method: 'PATCH',
+
+//                 headers: {
+//                     'Content-Type': 'application/json',
+
+//                     'X-CSRF-TOKEN': document
+//                         .querySelector('meta[name=csrf-token]')
+//                         .getAttribute('content'),
+
+//                     'Accept': 'application/json'
+//                 },
+
+//                 body: JSON.stringify({
+//                     status: targetLaneId
+//                 })
+//             });
+
+//             if (!response.ok) {
+//                 throw new Error('Failed to update status');
+//             }
+
+//         } catch (error) {
+
+//             console.error(error);
+
+//             alert('Failed to update task status');
+//         }
+
+//         this.handleDragEnd();
+//     }
+// });

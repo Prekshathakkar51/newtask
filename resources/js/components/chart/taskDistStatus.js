@@ -6,8 +6,8 @@ export const initChartOne = () => {
 
     const chartOneOptions = {
         series: [{
-            name: "Sales",
-            data: [168, 385, 201, 97],
+            name: "Tasks",
+            data: window.dashboardData.statusDistribution,
         },],
         colors: ["#465fff"],
         chart: {
@@ -38,7 +38,7 @@ export const initChartOne = () => {
         xaxis: {
             categories: [
                 "Pending",
-                "Inprogress",
+                "In progress",
                 "Completed",
                 "Overdue",
             ],
@@ -88,15 +88,24 @@ export const initChartOne = () => {
         },
     };
 
-    const chart = new ApexCharts(chartElement, chartOneOptions);
-    chart.render();
+    // const chart = new ApexCharts(chartElement, chartOneOptions);
+    // chart.render();
 
 
-    setTimeout(() => {
-        window.dispatchEvent(new Event('resize'));
-    }, 300);
+    // setTimeout(() => {
+    //     window.dispatchEvent(new Event('resize'));
+    // }, 300);
 
-    return chart;
+    // return chart;
+
+    window.statusDistributionChart = new ApexCharts(
+        chartElement,
+        chartOneOptions
+    );
+
+    window.statusDistributionChart.render();
+
+    return window.statusDistributionChart;
 };
 
 export default initChartOne;

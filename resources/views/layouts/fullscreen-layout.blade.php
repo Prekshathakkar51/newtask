@@ -110,6 +110,8 @@ window.addEventListener('resize', checkMobile);">
 
     @yield('content')
 
+    <x-common.toast />
+
 </body>
 
 @stack('scripts')
